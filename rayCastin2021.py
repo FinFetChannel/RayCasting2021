@@ -10,7 +10,7 @@ def main():
     pg.mouse.set_visible(False)
 
     hres = 200 #horizontal resolution
-    halfvres = 200 #vertical resolution/2
+    halfvres = 150 #vertical resolution/2
 
     mod = hres/60 #scaling factor (60° fov)
 
