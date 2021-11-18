@@ -1,7 +1,7 @@
 # RayCasting2021
 
-Raycasting is one of the simplest techniques to render a 3D looking scene, it's not actual 3D...
+In this project I'm developing a raycasting game in Python with Pygame. All the process is documented in video tutorials/devlogs:
 
-It is based on perspective, where the size of an object on the screen is inversely proportional to its distance to the camera.
-
-Video tutorial: https://youtu.be/4gqPv7A_YRY
+1 - Floorcasting: https://youtu.be/2Yj5mmKWukw
+2 - Raycasting walls: https://youtu.be/4gqPv7A_YRY
+3 - Using sprites: 
