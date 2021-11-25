@@ -14,7 +14,7 @@ def main():
     mod = hres/60 #scaling factor (60° fov)
     posx, posy, rot = 0, 0, 0
     frame = np.random.uniform(0,1, (hres, halfvres*2, 3))
-    sky = pg.image.load('skybox.jpg')
+    sky = pg.image.load('skybox2.jpg')
     sky = pg.surfarray.array3d(pg.transform.scale(sky, (360, halfvres*2)))/255
     floor = pg.surfarray.array3d(pg.image.load('floor.jpg'))/255
     
