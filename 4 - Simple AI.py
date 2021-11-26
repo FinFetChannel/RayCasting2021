@@ -48,7 +48,7 @@ def main():
         surf = pg.surfarray.make_surface(frame*255)
 
         mape = np.zeros((size, size))
-        enemies, player_health = enemies_ai(posx, posy, rot, enemies, maph, size, mape, swordsp,
+        enemies, player_health = enemies_ai(posx, posy, enemies, maph, size, mape, swordsp,
                                             ticks, player_health)
         enemies = sort_sprites(posx, posy, rot, enemies, maph, size, er/3)
         
@@ -59,7 +59,7 @@ def main():
         
         if int(swordsp) > 0:
             if swordsp == 1:
-                while enemies[en][3] > 1 and enemies[en][3] < 10:
+                while enemies[en][3] > 1.25 and enemies[en][3] < 10:
                     enemies[en][8] = enemies[en][8] - np.random.uniform(1,4)
                     x = enemies[en][0] + 0.3*np.cos(rot)
                     y = enemies[en][1] + 0.3*np.sin(rot)
@@ -204,23 +204,20 @@ def vision(posx, posy, enx, eny, dist2p, maph, size):
     seen = 1
     for i in range(int(dist2p/0.05)):
         x, y = x +0.05*cos, y +0.05*sin
-        if (maph[int(x-0.01)%(size-1)][int(y-0.01)%(size-1)] or
-            maph[int(x-0.01)%(size-1)][int(y+0.01)%(size-1)] or
-            maph[int(x+0.01)%(size-1)][int(y-0.01)%(size-1)] or
-            maph[int(x+0.01)%(size-1)][int(y+0.01)%(size-1)]):
+        if (maph[int(x-0.02)%(size-1)][int(y-0.02)%(size-1)] or
+            maph[int(x-0.02)%(size-1)][int(y+0.02)%(size-1)] or
+            maph[int(x+0.02)%(size-1)][int(y-0.02)%(size-1)] or
+            maph[int(x+0.02)%(size-1)][int(y+0.02)%(size-1)]):
             seen = 0
             break
     return seen
 
 @njit()
-def enemies_ai(posx, posy, rot, enemies, maph, size, mape, swordsp, ticks, player_health):
+def enemies_ai(posx, posy, enemies, maph, size, mape, swordsp, ticks, player_health):
     for en in range(len(enemies)): # friends = heatmap
         if enemies[en][8] > 0:
-            enx, eny = int(enemies[en][0]), int(enemies[en][1])
-            for i in range(3):
-                for j in range(3):
-                    x, y = enx+i-1, eny+j-1
-                    mape[x][y] = mape[x][y]+1
+            x, y = int(enemies[en][0]), int(enemies[en][1])
+            mape[x-1:x+2, y-1:y+2] = mape[x-1:x+2, y-1:y+2] + 1
 
     for en in range(len(enemies)):
         if enemies[en][8] > 0 and np.random.uniform(0,1) < 0.1: # update only % of the time            
@@ -229,36 +226,43 @@ def enemies_ai(posx, posy, rot, enemies, maph, size, mape, swordsp, ticks, playe
             dist2p = np.sqrt((enx-posx)**2+(eny-posy)**2+1e-16)
             
             friends = mape[int(enx)][int(eny)] - 1
-            if dist2p > 1.42: # add friends near the player if not to close
+            if dist2p > 1.42: # add friends near the player if not too close
                 friends = friends + mape[int(posx)][int(posy)]
 
             not_afraid = 0
-            if health > 2 or health + friends > 4:
+            # zombies are less afraid
+            if  health > 1 + enemies[en][4] or health + friends > 3 + enemies[en][4]:
                 not_afraid = 1
                 
-            if state == 0 and dist2p < 6 and not_afraid:  # normal
+            if state == 0 and dist2p < 6:  # normal
                 angle = angle2p(enx, eny, posx, posy)
                 angle2 = (enemies[en][6]-angle)%(2*np.pi)
                 if angle2 > 11*np.pi/6 or angle2 < np.pi/6 or (swordsp >= 1 and dist2p < 3): # in fov or heard
                     if vision(posx, posy, enx, eny, dist2p, maph, size):
-                        state = 1 # turn aggressive
+                        if not_afraid:
+                            state = 1 # turn aggressive
+                        else:
+                            state = 2 # retreat
+                            angle = angle - np.pi
                     else:
                         angle = enemies[en][6] # revert to original angle
 
             elif state == 1: # aggressive
-                angle = angle2p(enx, eny, posx, posy)
                 if dist2p < 0.6 and ticks - cooldown > 10: # perform attack, 2s cooldown
-                    cooldown = ticks
-                    player_health = player_health - np.random.uniform(0,1)/np.sqrt(mape[int(posx)][int(posy)])
-                if not not_afraid: # retreat
+                    enemies[en][10] = ticks # reset cooldown, damage is lower with more enemies on same cell
+                    player_health = player_health - np.random.uniform(0,1)/np.sqrt(1+mape[int(posx)][int(posy)])
+                if not_afraid: # turn to player
+                    angle = angle2p(enx, eny, posx, posy)
+                else: # retreat
                     state = 2
                     
             elif state == 2: # defensive
-                angle = angle2p(posx, posy, enx, eny) + np.random.uniform(-0.5, 0.5) #turn around
                 if not_afraid:
                     state = 0
+                else:
+                    angle = angle2p(posx, posy, enx, eny) + np.random.uniform(-0.5, 0.5) #turn around
 
-            enemies[en][6], enemies[en][9], enemies[en][10]  = angle, state, cooldown
+            enemies[en][6], enemies[en][9]  = angle+ np.random.uniform(-0.2, 0.2), state
             
     return enemies, player_health
 
@@ -291,17 +295,15 @@ def sort_sprites(posx, posy, rot, enemies, maph, size, er):
         enemies[en][3] = 9999
         if enemies[en][8] > 0: # dont bother with the dead
             enx, eny = enemies[en][0], enemies[en][1]
-            dist2p = np.sqrt((enx-posx)**2+(eny-posy)**2+1e-16)
-            if dist2p > 0.3 or enemies[en][9] != 1:
-                speed = er*(1+enemies[en][9]/2)
-                cos, sin = speed*np.cos(enemies[en][6]), speed*np.sin(enemies[en][6])
-                x, y = enx+cos, eny+sin
-                enx, eny = check_walls(enx, eny, maph, x, y)
-                if enx == enemies[en][0] or eny == enemies[en][1]: #check colisions
-                    enemies[en][6] = enemies[en][6] + np.random.uniform(-0.5, 0.5)
-                    if np.random.uniform(0,1) < 0.01:
-                        enemies[en][9] = 0 # return to normal state
-                enemies[en][0], enemies[en][1] = enx, eny
+            speed = er*(1+enemies[en][9]/2)
+            cos, sin = speed*np.cos(enemies[en][6]), speed*np.sin(enemies[en][6])
+            x, y = enx+cos, eny+sin
+            enx, eny = check_walls(enx, eny, maph, x, y)
+            if enx == enemies[en][0] or eny == enemies[en][1]: #check colisions
+                enemies[en][6] = enemies[en][6] + np.random.uniform(-0.5, 0.5)
+                if np.random.uniform(0,1) < 0.01:
+                    enemies[en][9] = 0 # return to normal state
+            enemies[en][0], enemies[en][1] = enx, eny
             
             angle = angle2p(posx, posy, enx, eny)
             angle2= (rot-angle)%(2*np.pi)
