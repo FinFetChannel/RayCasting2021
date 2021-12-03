@@ -11,3 +11,9 @@ In this project I'm developing a raycasting game in Python with Pygame. All the 
   3.1 - Looking up and down: https://youtu.be/JJEN08XBiyA
   
 4 - Enemies A.I.: https://youtu.be/Kmc15-8nDAA
+
+5 - Sounds: coming soon...
+
+6 - Interface and menus: coming soon...
+
+7 - Level design?
