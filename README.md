@@ -12,7 +12,7 @@ In this project I'm developing a raycasting game in Python with Pygame. All the 
   
 4 - Enemies A.I.: https://youtu.be/Kmc15-8nDAA
 
-5 - Sounds: coming soon...
+5 - Sounds: https://youtu.be/frqnCzZ4SRM
 
 6 - Interface and menus: coming soon...
 
