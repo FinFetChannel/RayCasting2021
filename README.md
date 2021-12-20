@@ -1,4 +1,4 @@
-# RayCasting2021
+# RayCasting2021 - Dead And!
 
 In this project I'm developing a raycasting game in Python with Pygame. All the process is documented in video tutorials/devlogs:
 
