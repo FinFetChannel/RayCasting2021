@@ -14,6 +14,6 @@ In this project I'm developing a raycasting game in Python with Pygame. All the 
 
 5 - Sounds: https://youtu.be/frqnCzZ4SRM
 
-6 - Interface and menus: coming soon...
+6 - Interface and menus: https://youtu.be/GKYkiwBmKZI
 
 7 - Level design?
