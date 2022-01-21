@@ -155,7 +155,7 @@ def main():
                               np.random.randint(0,5), #enemies
                               ]
 
-                nenemies = level**2 + 10 #number of enemies
+                nenemies = level**2 + 10 - level #number of enemies
                 sprites, spsize, sword, swordsp = get_sprites(hres, nlevel[5])
                 sky1, floor, wall, bwall, door, window = load_textures(nlevel)
                 sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
@@ -526,7 +526,7 @@ def enemies_ai(posx, posy, enemies, maph, size, mape, swordsp, ticks, player_hea
             elif state == 1: # aggressive
                 if dist2p < 0.8 and ticks - cooldown > 10: # perform attack, 2s cooldown
                     enemies[en][10] = ticks # reset cooldown, damage is lower with more enemies on same cell
-                    player_health = player_health - np.random.uniform(0,.5+level)/np.sqrt(1+mape[int(posx)][int(posy)])
+                    player_health = player_health - np.random.uniform(0.1, 0.5+level/2)/np.sqrt(1+mape[int(posx)][int(posy)])
                     state = 2
                 if not_afraid: # turn to player
                     angle = angle2p(enx, eny, posx, posy)
@@ -615,7 +615,7 @@ def spawn_enemies(number, maph, msize, posx, posy, level=0):
         entype = np.random.choice([0,1]) # 0 zombie, 1 skeleton
         direction = np.random.uniform(0, 2*np.pi) # facing direction
         size = np.random.uniform(7, 10)
-        health = size/2 + level
+        health = size/2 + 2*level/3
         state = np.random.randint(0,3) # 0 normal, 1 aggressive, 2 defensive
         cooldown = 0 # atack cooldown
  #                       0, 1,       2,         3,      4,    5,         6,     7,      8,     9,       10
