@@ -247,7 +247,7 @@ def main():
 
             
             fps = int(clock.get_fps())
-            pg.display.set_caption("Health: "+str(player_health)+" Enemies: " + str(nenemies) + " FPS: " + str(fps)+ ' ' + msg)
+            pg.display.set_caption("Health: "+str(round(player_health, 1))+" Enemies: " + str(nenemies) + " FPS: " + str(fps)+ ' ' + msg)
             posx, posy, rot, rotv = movement(pg.key.get_pressed(), posx, posy, rot, maph, er, rotv)
             pg.mouse.set_pos(400,300)
             
