@@ -236,7 +236,7 @@ def main():
                             nenemies = nenemies - 1
                             if nenemies == 0:
                                 exit2, msg = 0, "Find the master!"
-                            if np.random.uniform(0,1) < 0.1:
+                            if np.random.uniform(0,1) < 0.3:
                                 player_health = min(player_health+0.5, 20)
                                 hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
                                 sounds['healthup'].play()                           
@@ -527,7 +527,7 @@ def enemies_ai(posx, posy, enemies, maph, size, mape, swordsp, ticks, player_hea
             elif state == 1: # aggressive
                 if dist2p < 0.8 and ticks - cooldown > 10: # perform attack, 2s cooldown
                     enemies[en][10] = ticks # reset cooldown, damage is lower with more enemies on same cell
-                    player_health = player_health - np.random.uniform(0.1, 1.5+level/2)/np.sqrt(1+mape[int(posx)][int(posy)])
+                    player_health = player_health - np.random.uniform(0.1, 1 + level/3)/np.sqrt(1+mape[int(posx)][int(posy)])
                     state = 2
                 if not_afraid: # turn to player
                     angle = angle2p(enx, eny, posx, posy)
@@ -616,7 +616,7 @@ def spawn_enemies(number, maph, msize, posx, posy, level=0):
         entype = np.random.choice([0,1]) # 0 zombie, 1 skeleton
         direction = np.random.uniform(0, 2*np.pi) # facing direction
         size = np.random.uniform(7, 10)
-        health = size/2 + 2*level/3
+        health = size/2 + level/3
         state = np.random.randint(0,3) # 0 normal, 1 aggressive, 2 defensive
         cooldown = 0 # atack cooldown
  #                       0, 1,       2,         3,      4,    5,         6,     7,      8,     9,       10
