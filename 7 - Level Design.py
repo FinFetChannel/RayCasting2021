@@ -1,7 +1,6 @@
 import pygame as pg
 import numpy as np
 from numba import njit
-#pyinstaller.exe --onefile --windowed --icon=app.ico level3.py
 
 def main():
     pg.init()
@@ -48,7 +47,8 @@ def main():
     splash = []
     for i in range(4):
         splash.append(pg.image.load('Assets/Textures/splash'+str(i)+'.jpg').convert())
-    
+
+    sky1 = hearts.copy() # initialize with something to adjust resol on start
     msg = "Press any key..."
     surf = splash[0].copy()
     splash_screen(msg, splash[0], clock, font, screen)
@@ -156,12 +156,12 @@ def main():
                               ]
 
                 nenemies = level**2 + 10 - level #number of enemies
-                sprites, spsize, sword, swordsp = get_sprites(hres, nlevel[5])
+                sprites, spsize, sword, swordsp = get_sprites(nlevel[5])
                 sky1, floor, wall, bwall, door, window = load_textures(nlevel)
                 sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
                 enemies = spawn_enemies(nenemies, maph, size, posx, posy, level/2)
                 hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
-                exit2 = 1
+                exit2, damage_mod = 1, 1
                 
                 mape, minimap = np.zeros((size, size)), np.zeros((size, size, 3))
 
@@ -181,7 +181,7 @@ def main():
                 surf = draw_colonel(surf, colonel, posx-0.2*np.cos(rot), posy-0.2*np.sin(rot), exitx+0.5, exity+0.5,
                                     hres, halfvres, rot, rotv, maph, size)
             surf, en = draw_sprites(surf, sprites, enemies, spsize, hres, halfvres, ticks, sword, swordsp, rotv)
-
+            
             surf = pg.transform.scale2x(surf)
             surf = pg.transform.smoothscale(surf, (800, 600))
             surf.blit(hearts2, (20,20))
@@ -215,8 +215,8 @@ def main():
             
             if int(swordsp) > 0:
                 if swordsp == 1:
-                    en_o = en        
-                    while enemies[en][3] > 1 and enemies[en][3] < 10:
+                    damage_mod = 1        
+                    while enemies[en][3] > 1 and enemies[en][3] < 10 and damage_mod > 0.1:
                         enemies[en][8] = enemies[en][8] - np.random.uniform(1,4)
                         enemies[en][10] = ticks
                         x = enemies[en][0] + 0.3*np.cos(rot)
@@ -224,25 +224,26 @@ def main():
                         if maph[int(x)][int(y)] == 0:
                             enemies[en][0]= (x + enemies[en][0])/2 # push back
                             enemies[en][1]= (y + enemies[en][1])/2
+                        if damage_mod == 1:
+                            sounds['swoosh'].play()
+                            if enemies[en][4]:
+                                sounds['hitmonster2'].play()
+                            else:
+                                sounds['hitmonster'].play()
+                        damage_mod = damage_mod*0.7
                         if enemies[en][8] < 0:
                             sounds['deadmonster'].play()
-                            enemies[en,:] = 0
                             nenemies = nenemies - 1
                             if nenemies == 0:
                                 exit2, msg = 0, "Find the master!"
-                            if np.random.uniform(0,1) < 0.33:
+                            if np.random.uniform(0,1) < 0.1:
                                 player_health = min(player_health+0.5, 20)
                                 hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
                                 sounds['healthup'].play()                           
                         en = en - 1
-                    if en != en_o:
-                        sounds['swoosh'].play()
-                        if enemies[en_o][4]:
-                            sounds['hitmonster2'].play()
-                        else:
-                            sounds['hitmonster'].play()
-                    else:
-                        sounds['swoosh2'].play()
+
+                    if damage_mod == 1:
+                        sounds['swoosh2'].play()                        
                 swordsp = (swordsp + er*5)%4
 
             
@@ -252,7 +253,7 @@ def main():
             pg.mouse.set_pos(400,300)
             
 def movement(pressed_keys, posx, posy, rot, maph, et, rotv):
-    x, y, rot0, diag = posx, posy, rot, 0
+    x, y, diag = posx, posy, 0
     if pg.mouse.get_focused():
         p_mouse = pg.mouse.get_pos()
         rot = rot + np.clip((p_mouse[0]-400)/200, -0.2, .2)
@@ -526,7 +527,7 @@ def enemies_ai(posx, posy, enemies, maph, size, mape, swordsp, ticks, player_hea
             elif state == 1: # aggressive
                 if dist2p < 0.8 and ticks - cooldown > 10: # perform attack, 2s cooldown
                     enemies[en][10] = ticks # reset cooldown, damage is lower with more enemies on same cell
-                    player_health = player_health - np.random.uniform(0.1, 0.5+level/2)/np.sqrt(1+mape[int(posx)][int(posy)])
+                    player_health = player_health - np.random.uniform(0.1, 1.5+level/2)/np.sqrt(1+mape[int(posx)][int(posy)])
                     state = 2
                 if not_afraid: # turn to player
                     angle = angle2p(enx, eny, posx, posy)
@@ -622,7 +623,7 @@ def spawn_enemies(number, maph, msize, posx, posy, level=0):
         enemies.append([x, y, angle2p, invdist2p, entype, size, direction, dir2p, health, state, cooldown])
     return np.asarray(enemies)
 
-def get_sprites(hres, level):
+def get_sprites(level):
     sheet = pg.image.load('Assets/Sprites/zombie_n_skeleton'+str(level)+'.png').convert_alpha()
     sprites = [[], []]
     swordsheet = pg.image.load('Assets/Sprites/sword1.png').convert_alpha() 
@@ -637,7 +638,7 @@ def get_sprites(hres, level):
             sprites[0][i].append(pg.Surface.subsurface(sheet,(xx,yy,32,100)))
             sprites[1][i].append(pg.Surface.subsurface(sheet,(xx+96,yy,32,100)))
 
-    spsize = np.asarray(sprites[0][1][0].get_size())*hres/800
+    spsize = np.asarray(sprites[0][1][0].get_size())
 
     sword.append(sword[1]) # extra middle frame
     swordsp = 0 #current sprite for the sword
@@ -653,7 +654,7 @@ def draw_sprites(surf, sprites, enemies, spsize, hres, halfvres, ticks, sword, s
             break
         types, dir2p = int(enemies[en][4]), int(enemies[en][7])
         cos2 = np.cos(enemies[en][2])
-        scale = min(enemies[en][3], 2)*spsize*enemies[en][5]/cos2*hres/250
+        scale = min(enemies[en][3], 2)*spsize*enemies[en][5]/cos2*hres/800
         vert = halfvres + halfvres*min(enemies[en][3], 2)/cos2 - offset
         hor = hres/2 - hres*np.sin(enemies[en][2])
         if enemies[en][3] > 0.333:
@@ -676,8 +677,8 @@ def draw_colonel(surf, colonel, posx, posy, enx, eny, hres, halfvres, rot, rotv,
         if vision(enx, eny, posx, posy, dist2p, maph, size):
             offset = int(rotv*halfvres)
             cos2 = np.cos(angle2)
-            spsize = np.asarray(colonel.get_size())*hres/800
-            scale = min(1/dist2p, 2)*spsize*6/cos2*hres/250
+            spsize = np.asarray(colonel.get_size())
+            scale = min(1/dist2p, 2)*spsize*6/cos2*hres/800
             vert = halfvres + halfvres*min(1/dist2p, 2)/cos2 - offset
             hor = hres/2 - hres*np.sin(angle2)
             if dist2p < 3:
@@ -828,7 +829,8 @@ def load_textures(textures):
     sky1 = pg.image.load('Assets/Textures/skybox'+str(textures[0])+'.jpg')
     floor = pg.surfarray.array3d(pg.image.load('Assets/Textures/floor'+str(textures[1])+'.jpg'))/255
     wall = pg.surfarray.array3d(pg.image.load('Assets/Textures/wall'+str(textures[2])+'.jpg'))/255
-    bwall = pg.surfarray.array3d(pg.image.load('Assets/Textures/bwall'+str(textures[2])+'.jpg'))/255
+    bwall = pg.transform.smoothscale(pg.image.load('Assets/Textures/wall'+str(textures[2])+'.jpg'), (25,25))
+    bwall = pg.surfarray.array3d(pg.transform.smoothscale(bwall, (100,100)))/255
     door = pg.surfarray.array3d(pg.image.load('Assets/Textures/door'+str(textures[3])+'.jpg'))/255
     window = pg.surfarray.array3d(pg.image.load('Assets/Textures/window'+str(textures[4])+'.jpg'))/255
 
