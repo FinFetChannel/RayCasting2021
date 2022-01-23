@@ -17,3 +17,5 @@ In this project I'm developing a raycasting game in Python with Pygame. All the 
 6 - Interface and menus: https://youtu.be/GKYkiwBmKZI
 
 7 - Level design: https://youtu.be/-SbAbvRJ1ZA
+
+8 - FPS mod: https://youtu.be/UJVtpBGnn_k
