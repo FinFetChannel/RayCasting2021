@@ -184,7 +184,7 @@ def main():
             surf, en = draw_sprites(surf, sprites, enemies, spsize, hres, halfvres, ticks, sword, swordsp, rotv)
             
             if int(swordsp) > 0 and damage_mod < 1:
-                blood_scale = blood_scale*(1 + er)
+                blood_scale = blood_scale*(1 + 2*er)
                 scaled_blood = pg.transform.scale(blood, 4*blood_scale*blood_size*hres/800)
                 surf.blit(scaled_blood, np.asarray([hres/2, halfvres]) - 2*blood_scale*blood_size*hres/800)
             surf = pg.transform.scale2x(surf)
