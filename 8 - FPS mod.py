@@ -116,7 +116,8 @@ def main():
                 hres, halfvres, mod, frame = adjust_resolution(int(hres*adjust_res))
                 sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
                 adjust_res = 1             
-                
+                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
+                pxarray = pg.surfarray.pixels3d(surf0)
             screen.blit(surf2, (0,0))
             click = 0
             
@@ -163,16 +164,20 @@ def main():
                 enemies = spawn_enemies(nenemies, maph, size, posx, posy, level/2)
                 hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
                 exit2, damage_mod, blood_scale = 1, 1, 1
-                
                 mape, minimap = np.zeros((size, size)), np.zeros((size, size, 3))
-
                 sounds['healthup'].play()
+                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
+                pxarray = pg.surfarray.pixels3d(surf0)
 
         else:
             timer = timer + er/2
             frame = new_frame(posx-0.2*np.cos(rot), posy-0.2*np.sin(rot), rot, frame, sky, floor, hres, halfvres,
                               mod, maph, size, wall, mapc, exitx, exity, nenemies, rotv, door, window, bwall, exit2)
-            surf = pg.surfarray.make_surface(frame*(255-nlevel[0]*50)) # darker frame at night
+            
+            frame = frame*(255-nlevel[0]*50)
+            pxarray[:][:] = frame[:][:]
+            surf = surf0.copy()
+            #surf = pg.surfarray.make_surface(frame*(255-nlevel[0]*50)) # darker frame at night
 
             mape = np.zeros((size, size))
             health = player_health
@@ -784,8 +789,8 @@ def pause_menu(surf, menu, pause, options, click, running, m_vol, sfx_vol, sound
         surf.blit(menu[options], (0,0))
         pg.draw.polygon(surf, (50, 200, 50), ((123, 414), (123+523*sfx_vol, 414-54*sfx_vol), (123+520*sfx_vol, 418)))
         pg.draw.polygon(surf, (50, 200, 50), ((123, 566), (123+523*m_vol, 566-54*m_vol), (123+520*m_vol, 570)))
-        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.375)), 1, (255, 255, 255)), (200, 220+5*np.sin(ticks-1)))
-        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.375)), 1, (255, 100, 50)), (202, 220+5*np.sin(ticks)))
+        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.75)), 1, (255, 255, 255)), (200, 220+5*np.sin(ticks-1)))
+        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.75)), 1, (255, 100, 50)), (202, 220+5*np.sin(ticks)))
 
     elif options == 2: # info
         surf.blit(menu[options], (0,0))
