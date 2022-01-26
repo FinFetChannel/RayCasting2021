@@ -115,7 +115,8 @@ def main():
                 hres, halfvres, mod, frame = adjust_resolution(int(hres*adjust_res))
                 sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
                 adjust_res = 1             
-                
+                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
+                pxarray = pg.surfarray.pixels3d(surf0)
             screen.blit(surf2, (0,0))
             click = 0
             
@@ -166,12 +167,18 @@ def main():
                 mape, minimap = np.zeros((size, size)), np.zeros((size, size, 3))
 
                 sounds['healthup'].play()
+                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
+                pxarray = pg.surfarray.pixels3d(surf0)
 
         else:
             timer = timer + er/2
             frame = new_frame(posx-0.2*np.cos(rot), posy-0.2*np.sin(rot), rot, frame, sky, floor, hres, halfvres,
                               mod, maph, size, wall, mapc, exitx, exity, nenemies, rotv, door, window, bwall, exit2)
-            surf = pg.surfarray.make_surface(frame*(255-nlevel[0]*50)) # darker frame at night
+            frame = frame*(255-nlevel[0]*50)
+            #pxarray = pg.surfarray.pixels3d(surf0)
+            pxarray[:][:] = frame[:][:]
+            surf = surf0.copy()
+            #surf = pg.surfarray.make_surface(frame*(255-nlevel[0]*50)) # darker frame at night
 
             mape = np.zeros((size, size))
             health = player_health
