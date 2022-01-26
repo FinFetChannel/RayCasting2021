@@ -113,10 +113,9 @@ def main():
             
             if adjust_res != 1:
                 hres, halfvres, mod, frame = adjust_resolution(int(hres*adjust_res))
-                sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
+                sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))#/255
                 adjust_res = 1             
-                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
-                pxarray = pg.surfarray.pixels3d(surf0)
+
             screen.blit(surf2, (0,0))
             click = 0
             
@@ -159,7 +158,7 @@ def main():
                 nenemies = level**2 + 10 - level #number of enemies
                 sprites, spsize, sword, swordsp = get_sprites(nlevel[5])
                 sky1, floor, wall, bwall, door, window = load_textures(nlevel)
-                sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))/255
+                sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))#/255
                 enemies = spawn_enemies(nenemies, maph, size, posx, posy, level/2)
                 hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
                 exit2, damage_mod = 1, 1
@@ -167,18 +166,13 @@ def main():
                 mape, minimap = np.zeros((size, size)), np.zeros((size, size, 3))
 
                 sounds['healthup'].play()
-                surf0 = pg.surfarray.make_surface(frame*(255-nlevel[0]*50))
-                pxarray = pg.surfarray.pixels3d(surf0)
 
         else:
             timer = timer + er/2
             frame = new_frame(posx-0.2*np.cos(rot), posy-0.2*np.sin(rot), rot, frame, sky, floor, hres, halfvres,
                               mod, maph, size, wall, mapc, exitx, exity, nenemies, rotv, door, window, bwall, exit2)
-            frame = frame*(255-nlevel[0]*50)
-            #pxarray = pg.surfarray.pixels3d(surf0)
-            pxarray[:][:] = frame[:][:]
-            surf = surf0.copy()
-            #surf = pg.surfarray.make_surface(frame*(255-nlevel[0]*50)) # darker frame at night
+            
+            surf = pg.surfarray.make_surface(frame) 
 
             mape = np.zeros((size, size))
             health = player_health
@@ -463,7 +457,7 @@ def new_frame(posx, posy, rot, frame, sky, floor, hres, halfvres, mod, maph, siz
             
             if exit2 == 0 and int(x) == exitx and int(y) == exity and (x%1-0.5)**2 + (y%1-0.5)**2 < 0.2:
                 ee = j/(20*halfvres)
-                frame[i][j:2*halfvres-j] = (ee*np.ones(3)+frame[i][j:2*halfvres-j])/(1+ee)
+                frame[i][j:2*halfvres-j] = (ee*np.ones(3)*255+frame[i][j:2*halfvres-j])/(1+ee)
 
     return frame
 
@@ -797,7 +791,7 @@ def adjust_resolution(hres=250):
     hres = max(min(hres, 800), 80) # limit range from 80x60 to 800x600
     halfvres = int(hres*0.375) #vertical resolution/2
     mod = hres/60 #scaling factor (60° fov)
-    frame = np.random.uniform(0,1, (hres, halfvres*2, 3))
+    frame = np.random.randint(0,255, (hres, halfvres*2, 3))
     
     return hres, halfvres, mod, frame
 
@@ -834,12 +828,19 @@ def splash_screen(msg, splash, clock, font, screen):
 
 def load_textures(textures):
     sky1 = pg.image.load('Assets/Textures/skybox'+str(textures[0])+'.jpg')
-    floor = pg.surfarray.array3d(pg.image.load('Assets/Textures/floor'+str(textures[1])+'.jpg'))/255
-    wall = pg.surfarray.array3d(pg.image.load('Assets/Textures/wall'+str(textures[2])+'.jpg'))/255
+    floor = pg.surfarray.array3d(pg.image.load('Assets/Textures/floor'+str(textures[1])+'.jpg'))#/255
+    wall = pg.surfarray.array3d(pg.image.load('Assets/Textures/wall'+str(textures[2])+'.jpg'))#/255
     bwall = pg.transform.smoothscale(pg.image.load('Assets/Textures/wall'+str(textures[2])+'.jpg'), (25,25))
-    bwall = pg.surfarray.array3d(pg.transform.smoothscale(bwall, (100,100)))/255
-    door = pg.surfarray.array3d(pg.image.load('Assets/Textures/door'+str(textures[3])+'.jpg'))/255
-    window = pg.surfarray.array3d(pg.image.load('Assets/Textures/window'+str(textures[4])+'.jpg'))/255
+    bwall = pg.surfarray.array3d(pg.transform.smoothscale(bwall, (100,100)))#/255
+    door = pg.surfarray.array3d(pg.image.load('Assets/Textures/door'+str(textures[3])+'.jpg'))#/255
+    window = pg.surfarray.array3d(pg.image.load('Assets/Textures/window'+str(textures[4])+'.jpg'))#/255
+
+    if textures[0]%3 > 0: # darker at night
+        floor = (floor*(1-0.2*textures[0]%3)).astype(int)
+        wall = (wall*(1-0.2*textures[0]%3)).astype(int)
+        bwall = (bwall*(1-0.2*textures[0]%3)).astype(int)
+        door = (door*(1-0.2*textures[0]%3)).astype(int)
+        window = (window*(1-0.2*textures[0]%3)).astype(int)
 
     return sky1, floor, wall, bwall, door, window
     
