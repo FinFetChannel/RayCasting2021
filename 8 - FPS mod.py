@@ -157,7 +157,7 @@ def main():
                               np.random.randint(0,5), #enemies
                               ]
 
-                nenemies = level**2 + 10 - level #number of enemies
+                nenemies = level**2 + 10 + level #number of enemies
                 sprites, spsize, sword, swordsp = get_sprites(nlevel[5])
                 sky1, floor, wall, bwall, door, window = load_textures(nlevel)
                 sky = pg.surfarray.array3d(pg.transform.smoothscale(sky1, (720, halfvres*4)))
@@ -242,19 +242,22 @@ def main():
                                 blood_scale = enemies[en][3]
                                 sounds['swoosh'].play()
                                 if enemies[en][4]:
+                                    sounds['hitmonster2'].set_volume(min(1, enemies[en][3])*sfx_vol)
                                     sounds['hitmonster2'].play()
                                 else:
+                                    sounds['hitmonster'].set_volume(min(1, enemies[en][3])*sfx_vol)
                                     sounds['hitmonster'].play()
                             damage_mod = damage_mod*0.5
                             if enemies[en][8] < 0:
+                                sounds['deadmonster'].set_volume(min(1, enemies[en][3])*sfx_vol)
                                 sounds['deadmonster'].play()
                                 nenemies = nenemies - 1
                                 if nenemies == 0:
                                     exit2, msg = 0, "Find the master!"
-                                if np.random.uniform(0,1) < 0.3:
-                                    player_health = min(player_health+0.5, 20)
-                                    hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
-                                    sounds['healthup'].play()                           
+##                                if np.random.uniform(0,1) < 0.3:
+##                                    player_health = min(player_health+0.5, 20)
+##                                    hearts2 = pg.Surface.subsurface(hearts,(0,0,player_health*10,20))
+##                                    sounds['healthup'].play()                           
                         en = en - 1
 
                     if damage_mod == 1:
