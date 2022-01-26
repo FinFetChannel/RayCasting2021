@@ -80,16 +80,17 @@ def main():
             splash_screen(msg, surf, clock, font, screen)
             pause, clickdelay = 1, ticks
             pg.time.wait(500)
-        
+
+        if pg.mouse.get_pressed()[0]:
+            if swordsp < 1 and not pause:
+                swordsp, damage_mod = 1, 1
+            if pause and ticks - clickdelay > 1:
+                click, clickdelay = 1, ticks
+                sounds['healthup'].play()
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-            if event.type == pg.MOUSEBUTTONDOWN:
-                if swordsp < 1 and not pause:
-                    swordsp, damage_mod = 1, 1
-                if pause and ticks - clickdelay > 1:
-                    click, clickdelay = 1, ticks
-                    sounds['healthup'].play()
                     
             if event.type == pg.KEYDOWN:
                 if event.key == ord('p') or event.key == pg.K_ESCAPE:
