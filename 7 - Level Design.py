@@ -776,8 +776,8 @@ def pause_menu(surf, menu, pause, options, click, running, m_vol, sfx_vol, sound
         surf.blit(menu[options], (0,0))
         pg.draw.polygon(surf, (50, 200, 50), ((123, 414), (123+523*sfx_vol, 414-54*sfx_vol), (123+520*sfx_vol, 418)))
         pg.draw.polygon(surf, (50, 200, 50), ((123, 566), (123+523*m_vol, 566-54*m_vol), (123+520*m_vol, 570)))
-        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.375)), 1, (255, 255, 255)), (200, 220+5*np.sin(ticks-1)))
-        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.375)), 1, (255, 100, 50)), (202, 220+5*np.sin(ticks)))
+        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.75)), 1, (255, 255, 255)), (200, 220+5*np.sin(ticks-1)))
+        surf.blit(font.render(str(hres)+" x "+str(int(hres*0.75)), 1, (255, 100, 50)), (202, 220+5*np.sin(ticks)))
 
     elif options == 2: # info
         surf.blit(menu[options], (0,0))
