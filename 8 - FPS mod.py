@@ -21,6 +21,7 @@ def main():
     running, pause, options, newgame = 1, 1, 0, 2
     clock = pg.time.Clock()
     pg.mouse.set_visible(False)
+    pg.event.set_grab(1)
     timer = 0
     hres, halfvres, mod, frame = adjust_resolution()
     fullscreen = 0
@@ -268,15 +269,14 @@ def main():
             fps = int(clock.get_fps())
             pg.display.set_caption("Health: "+str(round(player_health, 1))+" Enemies: " + str(nenemies) + " FPS: " + str(fps)+ ' ' + msg)
             posx, posy, rot, rotv = movement(pg.key.get_pressed(), posx, posy, rot, maph, er, rotv)
-            pg.mouse.set_pos(400,300)
+##            pg.mouse.set_pos(400,300)
             
 def movement(pressed_keys, posx, posy, rot, maph, et, rotv):
     x, y, diag = posx, posy, 0
-    if pg.mouse.get_focused():
-        p_mouse = pg.mouse.get_pos()
-        rot = rot + np.clip((p_mouse[0]-400)/200, -0.2, .2)
-        rotv = rotv + np.clip((p_mouse[1]-300)/200, -0.2, .2)
-        rotv = np.clip(rotv, -0.999, .999)
+    p_mouse = pg.mouse.get_rel()
+    rot = rot + np.clip((p_mouse[0])/200, -0.2, .2)
+    rotv = rotv + np.clip((p_mouse[1])/200, -0.2, .2)
+    rotv = np.clip(rotv, -0.999, .999)
 
     if pressed_keys[pg.K_UP] or pressed_keys[ord('w')]:
         x, y, diag = x + et*np.cos(rot), y + et*np.sin(rot), 1
