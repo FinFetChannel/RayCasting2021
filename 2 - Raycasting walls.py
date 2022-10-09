@@ -22,6 +22,7 @@ def main():
     sky = pg.surfarray.array3d(pg.transform.scale(sky, (360, halfvres*2)))/255
     floor = pg.surfarray.array3d(pg.image.load('floor.jpg'))/255
     wall = pg.surfarray.array3d(pg.image.load('wall.jpg'))/255
+    pg.event.set_grab(1)
     
     while running:
         if int(posx) == exitx and int(posy) == exity:
@@ -42,14 +43,13 @@ def main():
         screen.blit(surf, (0,0))
         pg.display.update()
 
-        posx, posy, rot = movement(pg.key.get_pressed(), posx, posy, rot, maph, clock.tick()/500)
-        pg.mouse.set_pos(400,300)
+        posx, posy, rot = movement(posx, posy, rot, maph, clock.tick()/500)
 
-def movement(pressed_keys, posx, posy, rot, maph, et):
-    x, y, rot0, diag = posx, posy, rot, 0
-    if pg.mouse.get_focused():
-        p_mouse = pg.mouse.get_pos()
-        rot = rot + np.clip((p_mouse[0]-400)/200, -0.2, .2)
+def movement(posx, posy, rot, maph, et):
+    pressed_keys = pg.key.get_pressed()
+    x, y, diag = posx, posy, rot
+    p_mouse = pg.mouse.get_rel()
+    rot = rot + np.clip((p_mouse[0])/200, -0.2, .2)
 
     if pressed_keys[pg.K_UP] or pressed_keys[ord('w')]:
         x, y, diag = x + et*np.cos(rot), y + et*np.sin(rot), 1
